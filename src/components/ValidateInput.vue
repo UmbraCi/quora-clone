@@ -15,7 +15,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType } from 'vue';
+import { defineComponent, reactive, PropType, onMounted } from 'vue';
+import { emitter } from './ValidateForm.vue';
 
 const emailReg = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/;
 interface RuleProp {
@@ -63,12 +64,24 @@ export default defineComponent({
                     return passed;
                 });
                 inputRef.error = !allPassed;
+                return allPassed;
             }
+            return true;
         };
+        //清空输入框
+        const clearInputs = () => {
+            console.log('清空输入框');
+            context.emit('update:modelValue', '');
+        };
+        onMounted(() => {
+            emitter.emit('form-submit', validateInput);
+            emitter.emit('clear-inputs', clearInputs);
+        });
         return {
             inputRef,
             validateInput,
             updateValue,
+            clearInputs,
         };
     },
 });
