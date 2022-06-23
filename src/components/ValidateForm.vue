@@ -12,12 +12,14 @@
 <script lang="ts">
 import { defineComponent, onUnmounted } from 'vue';
 import mitt from 'mitt';
-type Events = {
-    'form-submit': () => boolean;
-    'clear-inputs': () => void;
-};
+
 type ValidateFunc = () => boolean;
 type ClearFunc = () => void;
+type Events = {
+    'form-submit': ValidateFunc;
+    'clear-inputs': ClearFunc;
+};
+
 export const emitter = mitt<Events>();
 export default defineComponent({
     name: 'ValidateForm',
@@ -29,8 +31,9 @@ export default defineComponent({
             const result = funcArr.map((func) => func()).every((res) => res);
             emit('form-submit', result);
             //清空表单
-            console.log(clearFuncArr);
-            clearFuncArr.map((func) => func());
+            if (result) {
+                clearFuncArr.map((func) => func());
+            }
         };
         const callback = (func: ValidateFunc) => {
             funcArr.push(func);

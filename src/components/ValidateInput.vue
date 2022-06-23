@@ -70,7 +70,7 @@ export default defineComponent({
         };
         //清空输入框
         const clearInputs = () => {
-            console.log('清空输入框');
+            inputRef.val = '';
             context.emit('update:modelValue', '');
         };
         onMounted(() => {

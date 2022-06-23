@@ -1,11 +1,17 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import LoginIndex from '../views/Login/index.vue';
+import HomeIndex from '@/views/Home/index.vue';
 
 const routes: Array<RouteRecordRaw> = [
     {
-        path: '/',
+        path: '/login',
         name: 'LoginIndex',
         component: LoginIndex,
+    },
+    {
+        path: '/',
+        name: 'Home',
+        component: HomeIndex,
     },
     // {
     //   path: "/about",
@@ -19,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes,
 });
 
