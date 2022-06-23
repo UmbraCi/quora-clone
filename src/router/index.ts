@@ -13,6 +13,11 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Home',
         component: HomeIndex,
     },
+    {
+        path: '/column/:id',
+        name: 'columnDetail',
+        component: () => import(/* webpackChunkName: "column" */ '@/views/ColumnDetail/index.vue'),
+    },
     // {
     //   path: "/about",
     //   name: "about",
