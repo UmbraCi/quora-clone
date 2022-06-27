@@ -18,6 +18,9 @@
 import { defineComponent, reactive, ref } from 'vue';
 import ValidateForm from '@/components/ValidateForm.vue';
 import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import { GlobalDataProps } from '@/store';
 
 // const emailReg = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/;
 export default defineComponent({
@@ -61,8 +64,14 @@ export default defineComponent({
         //         emailRef.error = false;
         //     }
         // };
+        const router = useRouter();
+        const store = useStore<GlobalDataProps>();
         const onFormSubmit = (result: boolean) => {
             console.log('提交', result);
+            if (result) {
+                router.push('/');
+                store.commit('login');
+            }
         };
         return {
             emailRef,

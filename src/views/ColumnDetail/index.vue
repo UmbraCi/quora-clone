@@ -17,16 +17,21 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { useRoute } from 'vue-router';
-import { testPosts, testData } from '@/store/testData';
 import PostList from '@/components/PostList.vue';
+import { useStore } from 'vuex';
+import { GlobalDataProps } from '@/store';
+
 export default defineComponent({
     name: 'ColumnDetail',
     components: { PostList },
     setup() {
         const route = useRoute();
         const currentId = +route.params.id; //+ 字符串转换成number
-        const column = testData.find((c) => c.id === currentId);
-        const list = testPosts.filter((post) => +post.column === currentId);
+
+        const store = useStore<GlobalDataProps>();
+
+        const column = store.getters.getColumnById(currentId);
+        const list = store.getters.getPostById(currentId);
 
         return { column, list };
     },

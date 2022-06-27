@@ -19,34 +19,10 @@
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue';
-import ColumnList, { ColumProps } from '@/components/ColumnList.vue';
+import ColumnList from '@/components/ColumnList.vue';
+import { useStore } from 'vuex';
+import { GlobalDataProps } from '@/store';
 
-const testData: ColumProps[] = [
-    {
-        id: 1,
-        title: 'Vue.js',
-        avatar: 'https://avatars0.githubusercontent.com/u/139426?s=460&v=4',
-        description: 'Vue.js是一个基于JavaScript的渐进式框架，由Mint-UI团队开发。',
-    },
-    {
-        id: 2,
-        title: 'Vue.js',
-        avatar: 'https://avatars0.githubusercontent.com/u/139426?s=460&v=4',
-        description: 'Vue.js是一个基于JavaScript的渐进式框架，由Mint-UI团队开发。',
-    },
-    {
-        id: 3,
-        title: 'Vue.js',
-        avatar: 'https://avatars0.githubusercontent.com/u/139426?s=460&v=4',
-        description: 'Vue.js是一个基于JavaScript的渐进式框架，由Mint-UI团队开发。',
-    },
-    {
-        id: 4,
-        title: 'Vue.js',
-        // avatar: "https://avatars0.githubusercontent.com/u/139426?s=460&v=4",
-        description: 'Vue.js是一个基于JavaScript的渐进式框架，由Mint-UI团队开发。',
-    },
-];
 export default defineComponent({
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Home',
@@ -54,14 +30,16 @@ export default defineComponent({
         ColumnList,
     },
     setup() {
-        const list = computed(() => {
-            return testData.map((column) => {
-                if (!column.avatar) {
-                    column.avatar = require('@/assets/logo.png');
-                }
-                return column;
-            });
-        });
+        const store = useStore<GlobalDataProps>();
+        const list = computed(() => store.state.columns);
+        // const list = computed(() => {
+        //     return testData.map((column) => {
+        //         if (!column.avatar) {
+        //             column.avatar = require('@/assets/logo.png');
+        //         }
+        //         return column;
+        //     });
+        // });
         return { list };
     },
 });
