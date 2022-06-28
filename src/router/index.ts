@@ -18,6 +18,11 @@ const routes: Array<RouteRecordRaw> = [
         name: 'columnDetail',
         component: () => import(/* webpackChunkName: "column" */ '@/views/ColumnDetail/index.vue'),
     },
+    {
+        path: '/create',
+        name: 'CreatePost',
+        component: () => import(/* webpackChunkName: "Post" */ '@/views/CreatePost/index.vue'),
+    },
     // {
     //   path: "/about",
     //   name: "about",

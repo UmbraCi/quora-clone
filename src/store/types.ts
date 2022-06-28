@@ -16,3 +16,10 @@ export interface ColumProps {
     avatar?: string;
     description: string;
 }
+
+export interface UserProps {
+    isLogin: boolean;
+    name?: string;
+    id?: number | string;
+    columnId?: number;
+}

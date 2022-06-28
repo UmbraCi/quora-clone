@@ -1,4 +1,4 @@
-import { PostProps, ColumProps } from './types';
+import { PostProps, ColumProps, UserProps } from './types';
 export const testPosts: PostProps[] = [
     {
         _id: '1',
@@ -49,3 +49,10 @@ export const testData: ColumProps[] = [
         description: 'Vue.js是一个基于JavaScript的渐进式框架，由Mint-UI团队开发。',
     },
 ];
+
+export const currentUser: UserProps = {
+    isLogin: false,
+    name: 'viking',
+    id: 'v_123',
+    columnId: 1,
+};

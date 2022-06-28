@@ -16,8 +16,8 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue';
-import ValidateForm from '@/components/ValidateForm.vue';
-import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue';
+import ValidateForm from '@/base/ValidateForm.vue';
+import ValidateInput, { RulesProp } from '@/base/ValidateInput.vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
