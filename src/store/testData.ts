@@ -51,7 +51,7 @@ export const testData: ColumProps[] = [
 ];
 
 export const currentUser: UserProps = {
-    isLogin: false,
+    isLogin: true,
     name: 'viking',
     id: 'v_123',
     columnId: 1,

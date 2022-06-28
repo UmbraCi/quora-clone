@@ -9,7 +9,7 @@
             <validate-input type="password" placeholder="请输入密码" :rules="passwordRules" v-model="passwordVal"></validate-input>
         </div>
         <template #submit>
-            <span class="btn btn-danger">提交</span>
+            <button type="submit" class="btn btn-primary btn-block btn-large">登录</button>
         </template>
     </validate-form>
 </template>
