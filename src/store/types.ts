@@ -1,25 +1,29 @@
-export interface PostProps {
+export interface ImageProps {
     _id?: string;
-    title: string;
-    excerpt?: string;
-    content?: string;
-    image?: string;
-    column: string;
-    author?: string;
+    url?: string;
     createdAt?: string;
-    isHTML?: boolean;
-}
-
-export interface ColumProps {
-    id: number;
-    title: string;
-    avatar?: string;
-    description: string;
 }
 
 export interface UserProps {
     isLogin: boolean;
     name?: string;
-    id?: number | string;
-    columnId?: number;
+    id?: string;
+    columnId?: string;
+}
+
+export interface PostProps {
+    _id: string;
+    title: string;
+    excerpt?: string;
+    content?: string;
+    image?: ImageProps;
+    column: string;
+    createdAt: string;
+}
+
+export interface ColumnProps {
+    _id: string;
+    title: string;
+    avatar?: ImageProps;
+    description: string;
 }

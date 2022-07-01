@@ -49,11 +49,11 @@ export default defineComponent({
                 const { columnId } = store.state.user;
                 if (columnId) {
                     const newPost: PostProps = {
-                        _id: new Date().getTime().toString(),
+                        _id: new Date().getTime().toLocaleString(),
                         title: titleVal.value,
                         content: contentVal.value,
                         createdAt: new Date().getTime().toString(),
-                        column: columnId.toString(),
+                        column: columnId,
                     };
                     //提交文章
                     store.commit('createPost', newPost);

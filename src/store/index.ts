@@ -1,28 +1,29 @@
 import { createStore } from 'vuex';
-import { testData, testPosts, currentUser } from './testData';
-import { PostProps, ColumProps, UserProps } from './types';
+import { currentUser } from './testData';
+import { PostProps, ColumnProps, UserProps } from './types';
+import axios from '@/libs/http';
 
 export interface GlobalDataProps {
-    columns: ColumProps[];
+    columns: ColumnProps[];
     posts: PostProps[];
     user: UserProps;
 }
 
 export default createStore<GlobalDataProps>({
     state: {
-        columns: testData,
-        posts: testPosts,
+        columns: [],
+        posts: [],
         user: currentUser,
     },
     getters: {
         getColumnById(state) {
-            return (id: number | string) => {
-                return state.columns.find((c) => c.id === id);
+            return (id: string) => {
+                return state.columns.find((c) => c._id === id);
             };
         },
-        getPostById(state) {
-            return (id: string) => {
-                return state.posts.find((post) => post.column == id);
+        getPostsByCid(state) {
+            return (cid: string) => {
+                return state.posts.filter((post) => post.column == cid);
             };
         },
     },
@@ -33,7 +34,32 @@ export default createStore<GlobalDataProps>({
         createPost(state, newPost) {
             state.posts.push(newPost);
         },
+        fetchColumns(state, columns) {
+            state.columns = columns.data.list;
+        },
+        fetchColumn(state, rawData) {
+            state.columns = [rawData.data];
+        },
+        fetchPosts(state, rawData) {
+            state.posts = rawData.data.list;
+        },
     },
-    actions: {},
+    actions: {
+        fetchColumns({ commit }) {
+            axios.get('/api/columns').then((res) => {
+                commit('fetchColumns', res.data);
+            });
+        },
+        fetchColumn({ commit }, cid) {
+            axios.get(`/api/columns/${cid}`).then((res) => {
+                commit('fetchColumn', res.data);
+            });
+        },
+        fetchPosts({ commit }, cid) {
+            axios.get(`/api/columns/${cid}/posts`).then((res) => {
+                commit('fetchPosts', res.data);
+            });
+        },
+    },
     modules: {},
 });
