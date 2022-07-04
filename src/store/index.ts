@@ -1,16 +1,23 @@
-import { createStore } from 'vuex';
+import { createStore, Commit } from 'vuex';
 import { currentUser } from './testData';
 import { PostProps, ColumnProps, UserProps } from './types';
 import axios from '@/libs/http';
 
 export interface GlobalDataProps {
+    loading: boolean;
     columns: ColumnProps[];
     posts: PostProps[];
     user: UserProps;
 }
 
+//封装请求
+const getAndCommit = async (url: string, mutationName: string, commit: Commit) => {
+    const { data } = await axios.get(url);
+    commit(mutationName, data);
+};
 export default createStore<GlobalDataProps>({
     state: {
+        loading: false,
         columns: [],
         posts: [],
         user: currentUser,
@@ -43,22 +50,28 @@ export default createStore<GlobalDataProps>({
         fetchPosts(state, rawData) {
             state.posts = rawData.data.list;
         },
+        setLoading(state, status) {
+            state.loading = status;
+        },
     },
     actions: {
         fetchColumns({ commit }) {
-            axios.get('/api/columns').then((res) => {
-                commit('fetchColumns', res.data);
-            });
+            // axios.get('/api/columns').then((res) => {
+            //     commit('fetchColumns', res.data);
+            // });
+            getAndCommit('/api/columns', 'fetchColumns', commit);
         },
         fetchColumn({ commit }, cid) {
-            axios.get(`/api/columns/${cid}`).then((res) => {
-                commit('fetchColumn', res.data);
-            });
+            // axios.get(`/api/columns/${cid}`).then((res) => {
+            //     commit('fetchColumn', res.data);
+            // });
+            getAndCommit(`/api/columns/${cid}`, 'fetchColumn', commit);
         },
         fetchPosts({ commit }, cid) {
-            axios.get(`/api/columns/${cid}/posts`).then((res) => {
-                commit('fetchPosts', res.data);
-            });
+            // axios.get(`/api/columns/${cid}/posts`).then((res) => {
+            //     commit('fetchPosts', res.data);
+            // });
+            getAndCommit(`/api/columns/${cid}/posts`, 'fetchPosts', commit);
         },
     },
     modules: {},

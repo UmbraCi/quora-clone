@@ -1,4 +1,5 @@
 import axios from 'axios';
+import store from '@/store';
 
 // 这里采用代理实现完成
 // axios.defaults.baseURL = 'http://localhost:7001/api/'
@@ -6,6 +7,7 @@ import axios from 'axios';
 
 // interceptors 发送请求的拦截器
 axios.interceptors.request.use((config) => {
+    store.commit('setLoading', true);
     config.params = {
         ...config.params,
     };

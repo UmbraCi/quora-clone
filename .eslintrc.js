@@ -19,5 +19,6 @@ module.exports = {
                 printWidth: 160,
             },
         ],
+        'vue/multi-word-component-names': 'off',
     },
 };

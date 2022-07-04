@@ -9,7 +9,7 @@
                 <p class="text-muted">{{ column.description }}</p>
             </div>
         </div>
-        <post-list :list="list"></post-list>
+        <post-list :list="postList"></post-list>
         <button class="btn btn-outline-primary mt-2 mb-5 mx-auto btn-block w-25 load-more">加载更多</button>
     </div>
 </template>
@@ -20,7 +20,7 @@ import { useRoute } from 'vue-router';
 import PostList from '@/components/PostList.vue';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
-import { ColumnProps } from '@/store/types';
+import { ColumnProps, PostProps } from '@/store/types';
 
 export default defineComponent({
     name: 'ColumnDetail',
@@ -48,9 +48,21 @@ export default defineComponent({
         });
         // const column = store.getters.getColumnById(currentId);
         // const list = store.getters.getPostById(currentId);
-        const list = store.getters.getPostsByCid(currentId);
+        const postList = computed(() => {
+            const list = store.getters.getPostsByCid(currentId) as PostProps[];
+            list.map((item) => {
+                if (item.image && item.image.url) {
+                    item.image.url = item.image.url + '?x-oss-process=image/resize,m_pad,h_100,w_100';
+                } else {
+                    item.image = {
+                        url: require('@/assets/logo.png'),
+                    };
+                }
+            });
+            return list;
+        });
 
-        return { column, list };
+        return { column, postList };
     },
 });
 </script>
