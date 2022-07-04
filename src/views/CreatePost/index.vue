@@ -46,18 +46,18 @@ export default defineComponent({
         const store = useStore<GlobalDataProps>();
         const onFormSubmit = (result: boolean) => {
             if (result) {
-                const { columnId } = store.state.user;
-                if (columnId) {
+                const { column } = store.state.user;
+                if (column) {
                     const newPost: PostProps = {
                         _id: new Date().getTime().toLocaleString(),
                         title: titleVal.value,
                         content: contentVal.value,
                         createdAt: new Date().getTime().toString(),
-                        column: columnId,
+                        column: column,
                     };
                     //提交文章
                     store.commit('createPost', newPost);
-                    router.push({ name: 'colum', params: { id: columnId } });
+                    router.push({ name: 'colum', params: { id: column } });
                 }
             }
         };

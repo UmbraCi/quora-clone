@@ -52,8 +52,8 @@ export const testData: ColumnProps[] = [
 ];
 
 export const currentUser: UserProps = {
-    isLogin: true,
-    name: 'viking',
-    id: 'v_123',
-    columnId: '1',
+    isLogin: false,
+    // name: 'viking',
+    // id: 'v_123',
+    // columnId: '1',
 };

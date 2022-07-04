@@ -6,9 +6,12 @@ export interface ImageProps {
 
 export interface UserProps {
     isLogin: boolean;
-    name?: string;
-    id?: string;
-    columnId?: string;
+    nickName?: string;
+    _id?: string;
+    column?: string;
+    email?: string;
+    description?: string;
+    avatar?: ImageProps;
 }
 
 export interface PostProps {
@@ -27,3 +30,5 @@ export interface ColumnProps {
     avatar?: ImageProps;
     description: string;
 }
+
+export type MessageType = 'success' | 'error' | 'default';

@@ -14,6 +14,21 @@ axios.interceptors.request.use((config) => {
     return config;
 });
 
+// interceptors 响应的拦截器
+axios.interceptors.response.use(
+    (resp) => {
+        store.commit('setLoading', false);
+        return resp;
+    },
+    (e) => {
+        console.log(e.response);
+        const { error } = e.response.data;
+        store.commit('setError', { status: true, message: error });
+        store.commit('setLoading', false);
+        return Promise.reject(e);
+    }
+);
+
 // http://api.imooc.com/api/columns?currentPage=1&pageSize=5 icode={codeName}
 
 // axios.get('/api/columns?currentPage=1&pageSize=5').then((res) => {
