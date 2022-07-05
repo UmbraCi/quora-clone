@@ -21,6 +21,7 @@ import ValidateInput, { RulesProp } from '@/base/ValidateInput.vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
+import createMessage from '@/base/createMessage';
 
 // const emailReg = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/;
 export default defineComponent({
@@ -76,7 +77,10 @@ export default defineComponent({
                 store
                     .dispatch('loginAndFetch', payload)
                     .then(() => {
-                        router.push('/');
+                        createMessage('登陆成功，2秒后跳转首页', 'success');
+                        setTimeout(() => {
+                            router.push('/');
+                        }, 2000);
                     })
                     .catch((e) => {
                         console.log(e);

@@ -8,6 +8,7 @@ import store from '@/store';
 // interceptors 发送请求的拦截器
 axios.interceptors.request.use((config) => {
     store.commit('setLoading', true);
+    store.commit('setError', { status: false, message: '' });
     config.params = {
         ...config.params,
     };
@@ -21,7 +22,6 @@ axios.interceptors.response.use(
         return resp;
     },
     (e) => {
-        console.log(e.response);
         const { error } = e.response.data;
         store.commit('setError', { status: true, message: error });
         store.commit('setLoading', false);

@@ -9,7 +9,7 @@ const storageHandler = new StorageHandler();
 
 export interface GlobalErrorProps {
     status: boolean;
-    message?: boolean;
+    message?: string;
 }
 
 export interface GlobalDataProps {
@@ -116,6 +116,9 @@ export default createStore<GlobalDataProps>({
             return dispatch('login', loginData).then(() => {
                 return dispatch('fetchCurrentUser');
             });
+        },
+        register({ commit }, payload) {
+            return postAndCommit('/api/users', 'register', commit, payload);
         },
     },
     modules: {},

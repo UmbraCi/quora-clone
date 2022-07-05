@@ -1,12 +1,22 @@
 <template>
     <div class="validate-input-container pb-3">
         <input
+            v-if="tag !== 'textarea'"
             class="form-control"
             v-bind="$attrs"
             :class="{ 'is-invalid': inputRef.error }"
             :value="inputRef.val"
             @input="updateValue"
             @blur="validateInput"
+        />
+        <textarea
+            v-else
+            class="form-control"
+            :class="{ 'is-invalid': inputRef.error }"
+            :value="inputRef.val"
+            @blur="validateInput"
+            @input="updateValue"
+            v-bind="$attrs"
         />
         <div class="form-text invalid-feedback" v-if="inputRef.error">
             {{ inputRef.message }}
@@ -19,9 +29,13 @@ import { defineComponent, reactive, PropType, onMounted } from 'vue';
 import { emitter } from './ValidateForm.vue';
 
 const emailReg = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/;
+
+export type TagType = 'input' | 'textarea' | 'custom';
+
 interface RuleProp {
-    type: 'required' | 'email';
+    type: 'required' | 'email' | 'custom';
     message: string;
+    validator?: () => boolean;
 }
 export type RulesProp = RuleProp[];
 export default defineComponent({
@@ -32,6 +46,10 @@ export default defineComponent({
         },
         modelValue: {
             type: String,
+        },
+        tag: {
+            type: String as PropType<TagType>,
+            default: 'input',
         },
     },
     inheritAttrs: false,
@@ -57,6 +75,9 @@ export default defineComponent({
                             break;
                         case 'email':
                             passed = emailReg.test(inputRef.val);
+                            break;
+                        case 'custom':
+                            passed = passed = rule.validator ? rule.validator() : true;
                             break;
                         default:
                             break;

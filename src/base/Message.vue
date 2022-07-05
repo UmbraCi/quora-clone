@@ -12,8 +12,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType, onUnmounted } from 'vue';
+import { defineComponent, ref, PropType } from 'vue';
 import { MessageType } from '@/store/types';
+import useDOMcreate from '@/hooks/useDOMCreate';
 export default defineComponent({
     name: 'Message',
     props: {
@@ -25,9 +26,7 @@ export default defineComponent({
     },
     emits: ['close-message'],
     setup(props, context) {
-        const node = document.createElement('div');
-        node.id = 'message';
-        document.body.appendChild(node);
+        useDOMcreate('message');
         const isVisible = ref(true);
 
         const classObject = {
@@ -39,9 +38,6 @@ export default defineComponent({
             isVisible.value = false;
             context.emit('close-message', true);
         };
-        onUnmounted(() => {
-            document.body.removeChild(node);
-        });
         return {
             isVisible,
             classObject,

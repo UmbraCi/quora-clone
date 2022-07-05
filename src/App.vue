@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <global-header :user="currentUser"></global-header>
-        <message type="error" :message="error.message"></message>
+        <!-- <message v-if="error.status" type="error" :message="error.message"></message> -->
         <loader v-if="isLoading" text="拼命加载中" backgroundColor="rgba(0, 0, 0, 0.8)"></loader>
         <router-view></router-view>
         <footer class="text-center py-4 text-secondary bg-light mt-6">
@@ -19,13 +19,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted } from 'vue';
+import { defineComponent, computed, onMounted, watch } from 'vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import GlobalHeader from '@/components/GlobalHeader.vue';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
 import Loader from '@/base/Loader.vue';
-import Message from '@/base/Message.vue';
+// import Message from '@/base/Message.vue';
+import createMessage from '@/base/createMessage';
 
 import axios from './libs/http';
 
@@ -34,7 +35,7 @@ export default defineComponent({
     components: {
         GlobalHeader,
         Loader,
-        Message,
+        // Message,
     },
     setup() {
         const store = useStore<GlobalDataProps>();
@@ -48,6 +49,16 @@ export default defineComponent({
                 store.dispatch('fetchCurrentUser');
             }
         });
+        //侦听器数据源可以是返回值的 getter 函数，也可以直接是 ref：
+        watch(
+            () => error.value.status,
+            () => {
+                const { status, message } = error.value;
+                if (status && message) {
+                    createMessage(message, 'error');
+                }
+            }
+        );
         return {
             currentUser,
             isLoading,
