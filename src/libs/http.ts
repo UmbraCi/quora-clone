@@ -22,7 +22,7 @@ axios.interceptors.response.use(
         return resp;
     },
     (e) => {
-        const { error } = e.response.data;
+        const { error } = e.response.data || { error: '' };
         store.commit('setError', { status: true, message: error });
         store.commit('setLoading', false);
         return Promise.reject(e);
