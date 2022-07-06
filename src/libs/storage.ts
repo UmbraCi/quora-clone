@@ -41,3 +41,6 @@ export class StorageHandler {
         }
     }
 }
+
+//统一使用localStorage存储
+export const storageType = StorageType.Local;

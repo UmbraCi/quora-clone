@@ -1,7 +1,23 @@
 <template>
     <div class="create-post-page">
         <h4>新建文章</h4>
-        <input type="file" name="file" @change.prevent="handleFileChange" />
+        <uploader
+            action="/api/upload"
+            class="d-flex align-items-center justify-content-center bg-light text-secondary w-100 my-4"
+            :before-upload="uploadCheck"
+            @file-uploaded-success="onFileUploadedSuccess"
+        >
+            <h2>点击上传</h2>
+            <template #loading>
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </template>
+            <template #uploaded="dataProps">
+                <img :src="dataProps.uploadedData.data.url" width="500" />
+            </template>
+        </uploader>
+        <!-- <input type="file" name="file" @change.prevent="handleFileChange" /> -->
         <validate-form @form-submit="onFormSubmit">
             <div class="mb-3">
                 <label class="form-label">文章标题：</label>
@@ -22,21 +38,26 @@
 import { defineComponent, ref } from 'vue';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
-import { PostProps } from '@/store/types';
+import { PostProps, ResponseType, ImageProps } from '@/store/types';
 import { useRouter } from 'vue-router';
 import ValidateInput, { RulesProp } from '@/base/ValidateInput.vue';
 import ValidateForm from '@/base/ValidateForm.vue';
 import axios from '@/libs/http';
+import Uploader from '@/base/Uploader.vue';
+import { beforeUploadCheck } from '@/helper';
+import createMessage from '@/base/createMessage';
 
 export default defineComponent({
     name: 'CreatePost',
     components: {
         ValidateInput,
         ValidateForm,
+        Uploader,
     },
     setup() {
         const router = useRouter();
         const titleVal = ref('');
+        let imageId = '';
         const titleRules: RulesProp = [
             {
                 type: 'required',
@@ -48,18 +69,24 @@ export default defineComponent({
         const store = useStore<GlobalDataProps>();
         const onFormSubmit = (result: boolean) => {
             if (result) {
-                const { column } = store.state.user;
+                const { column, _id } = store.state.user;
                 if (column) {
                     const newPost: PostProps = {
-                        _id: new Date().getTime().toLocaleString(),
                         title: titleVal.value,
                         content: contentVal.value,
-                        createdAt: new Date().getTime().toString(),
-                        column: column,
+                        column,
+                        author: _id,
                     };
+                    if (imageId) {
+                        newPost.image = imageId;
+                    }
                     //提交文章
-                    store.commit('createPost', newPost);
-                    router.push({ name: 'colum', params: { id: column } });
+                    store.dispatch('createPost', newPost).then(() => {
+                        createMessage('发表成功，2秒后跳转到文章', 'success', 2000);
+                        setTimeout(() => {
+                            router.push({ name: 'columnDetail', params: { id: column } });
+                        }, 2000);
+                    });
                 }
             }
         };
@@ -81,6 +108,23 @@ export default defineComponent({
                     });
             }
         };
+        const uploadCheck = (file: File) => {
+            const result = beforeUploadCheck(file, { format: ['image/jpeg', 'image/png'], size: 1 });
+            const { passed, error } = result;
+            if (error === 'format') {
+                createMessage('上传图片只能是 JPG/PNG 格式!', 'error');
+            }
+            if (error === 'size') {
+                createMessage('上传图片大小不能超过 1Mb!', 'error');
+            }
+            return passed;
+        };
+
+        const onFileUploadedSuccess = (rawData: ResponseType<ImageProps>) => {
+            if (rawData.data._id) {
+                imageId = rawData.data._id;
+            }
+        };
         return {
             onFormSubmit,
             titleVal,
@@ -88,7 +132,36 @@ export default defineComponent({
             titleRules,
             contentRules,
             handleFileChange,
+            uploadCheck,
+            onFileUploadedSuccess,
         };
     },
 });
 </script>
+
+<style>
+.create-post-page .file-upload-container {
+    height: 200px;
+    cursor: pointer;
+    overflow: hidden;
+}
+.create-post-page .file-upload-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.uploaded-area {
+    position: relative;
+}
+.uploaded-area:hover h3 {
+    display: block;
+}
+.uploaded-area h3 {
+    display: none;
+    position: absolute;
+    color: #999;
+    text-align: center;
+    width: 100%;
+    top: 50%;
+}
+</style>

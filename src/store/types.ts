@@ -1,6 +1,7 @@
 export interface ImageProps {
     _id?: string;
     url?: string;
+    fitUrl?: string;
     createdAt?: string;
 }
 
@@ -15,13 +16,14 @@ export interface UserProps {
 }
 
 export interface PostProps {
-    _id: string;
+    _id?: string;
     title: string;
     excerpt?: string;
     content?: string;
-    image?: ImageProps;
+    image?: ImageProps | string;
     column: string;
-    createdAt: string;
+    author?: string;
+    createdAt?: string;
 }
 
 export interface ColumnProps {

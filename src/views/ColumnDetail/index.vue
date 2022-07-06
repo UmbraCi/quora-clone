@@ -2,7 +2,7 @@
     <div class="column-detail-page w-690">
         <div class="column-info row mb-4 border-bottom pb-4 align-items-center" v-if="column">
             <div class="col-3 text-center">
-                <img :src="column.avatar && column.avatar.url" :alt="column.title" class="rounded-circle border w-100" />
+                <img :src="column.avatar && column.avatar.fitUrl" :alt="column.title" class="rounded-circle border w-100" />
             </div>
             <div class="col-9">
                 <h4>{{ column.title }}</h4>
@@ -21,6 +21,7 @@ import PostList from '@/components/PostList.vue';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
 import { ColumnProps, PostProps } from '@/store/types';
+import { generateFitUrl } from '@/helper';
 
 export default defineComponent({
     name: 'ColumnDetail',
@@ -38,11 +39,7 @@ export default defineComponent({
         const column = computed(() => {
             const selectColumn = store.getters.getColumnById(currentId) as ColumnProps;
             if (selectColumn) {
-                if (!selectColumn.avatar) {
-                    selectColumn.avatar = {
-                        url: require('@/assets/logo.png'),
-                    };
-                }
+                generateFitUrl(selectColumn, 100, 100);
             }
             return selectColumn;
         });
@@ -50,15 +47,15 @@ export default defineComponent({
         // const list = store.getters.getPostById(currentId);
         const postList = computed(() => {
             const list = store.getters.getPostsByCid(currentId) as PostProps[];
-            list.map((item) => {
-                if (item.image && item.image.url) {
-                    item.image.url = item.image.url + '?x-oss-process=image/resize,m_pad,h_100,w_100';
-                } else {
-                    item.image = {
-                        url: require('@/assets/logo.png'),
-                    };
-                }
-            });
+            // list.map((item) => {
+            //     if (item.image && item.image.url) {
+            //         item.image.url = item.image.url + '?x-oss-process=image/resize,m_pad,h_100,w_100';
+            //     } else {
+            //         item.image = {
+            //             url: require('@/assets/logo.png'),
+            //         };
+            //     }
+            // });
             return list;
         });
 

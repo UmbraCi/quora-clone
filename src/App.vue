@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted, watch } from 'vue';
+import { defineComponent, computed, watch } from 'vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import GlobalHeader from '@/components/GlobalHeader.vue';
 import { useStore } from 'vuex';
@@ -27,8 +27,6 @@ import { GlobalDataProps } from '@/store';
 import Loader from '@/base/Loader.vue';
 // import Message from '@/base/Message.vue';
 import createMessage from '@/base/createMessage';
-
-import axios from './libs/http';
 
 export default defineComponent({
     name: 'APP',
@@ -41,14 +39,7 @@ export default defineComponent({
         const store = useStore<GlobalDataProps>();
         const currentUser = computed(() => store.state.user);
         const isLoading = computed(() => store.state.loading);
-        const token = computed(() => store.state.token);
         const error = computed(() => store.state.error);
-        onMounted(() => {
-            if (!currentUser.value.isLogin && token.value) {
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
-                store.dispatch('fetchCurrentUser');
-            }
-        });
         //侦听器数据源可以是返回值的 getter 函数，也可以直接是 ref：
         watch(
             () => error.value.status,

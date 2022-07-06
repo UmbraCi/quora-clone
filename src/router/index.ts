@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import LoginIndex from '../views/Login/index.vue';
 import HomeIndex from '@/views/Home/index.vue';
 import store from '@/store';
+import axios from '@/libs/http';
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -50,12 +51,41 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    if (to.meta.requiredLogin && !store.state.user.isLogin) {
-        next('/login');
-    } else if (to.meta.redirectAlreadyLogin && store.state.user.isLogin) {
-        next({ name: 'Home' });
+    const { user, token } = store.state;
+    const { redirectAlreadyLogin, requiredLogin } = to.meta;
+    if (!user.isLogin) {
+        //没有登录
+        if (token) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            store
+                .dispatch('fetchCurrentUser')
+                .then(() => {
+                    if (redirectAlreadyLogin) {
+                        next('/');
+                    } else {
+                        next();
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                    store.commit('logout');
+                    next('login');
+                });
+        } else {
+            //  VUEx中没有token
+            if (requiredLogin) {
+                next('login');
+            } else {
+                next();
+            }
+        }
     } else {
-        next();
+        //已登录
+        if (redirectAlreadyLogin) {
+            next('/');
+        } else {
+            next();
+        }
     }
 });
 
