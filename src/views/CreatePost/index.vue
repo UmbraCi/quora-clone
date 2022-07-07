@@ -5,6 +5,7 @@
             action="/api/upload"
             class="d-flex align-items-center justify-content-center bg-light text-secondary w-100 my-4"
             :before-upload="uploadCheck"
+            :uploaded="uploadedData"
             @file-uploaded-success="onFileUploadedSuccess"
         >
             <h2>点击上传</h2>
@@ -35,11 +36,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
 import { PostProps, ResponseType, ImageProps } from '@/store/types';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import ValidateInput, { RulesProp } from '@/base/ValidateInput.vue';
 import ValidateForm from '@/base/ValidateForm.vue';
 import axios from '@/libs/http';
@@ -56,6 +57,9 @@ export default defineComponent({
     },
     setup() {
         const router = useRouter();
+        const route = useRoute();
+        const queryId = route.query.id;
+        const idEditMode = !!queryId; //是否是编辑状态
         const titleVal = ref('');
         let imageId = '';
         const titleRules: RulesProp = [
@@ -67,6 +71,20 @@ export default defineComponent({
         const contentRules: RulesProp = [{ type: 'required', message: '文章详情不能为空' }];
         const contentVal = ref('');
         const store = useStore<GlobalDataProps>();
+        const uploadedData = ref();
+        onMounted(() => {
+            if (idEditMode) {
+                store.dispatch('fetchPost', queryId).then((rawData: ResponseType<PostProps>) => {
+                    const currentPost = rawData.data;
+                    const { image, title, content } = currentPost;
+                    titleVal.value = title;
+                    contentVal.value = content || '';
+                    if (image) {
+                        uploadedData.value = { data: image };
+                    }
+                });
+            }
+        });
         const onFormSubmit = (result: boolean) => {
             if (result) {
                 const { column, _id } = store.state.user;
@@ -134,6 +152,8 @@ export default defineComponent({
             handleFileChange,
             uploadCheck,
             onFileUploadedSuccess,
+            idEditMode,
+            uploadedData,
         };
     },
 });

@@ -10,6 +10,10 @@
                 <span class="text-muted col text-right font-italic">发表于：{{ currentPost.createdAt }}</span>
             </div>
             <div v-html="currentHTML"></div>
+            <div v-if="showEditArea" class="btn-group mt-5">
+                <router-link type="button" class="btn btn-success" :to="{ name: 'CreatePost', query: { id: currentPost._id } }">编辑</router-link>
+                <button type="button" class="btn btn-danger">删除</button>
+            </div>
         </article>
     </div>
 </template>
@@ -19,10 +23,12 @@ import { computed, defineComponent, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store/index';
-import { PostProps, ImageProps } from '@/store/types';
+import { PostProps, ImageProps, UserProps } from '@/store/types';
 import MarkdownIt from 'markdown-it';
+import UserProfile from '@/components/UserProfile.vue';
 export default defineComponent({
     name: 'PostDetail',
+    components: { UserProfile },
     setup() {
         const route = useRoute();
         const store = useStore<GlobalDataProps>();
@@ -48,10 +54,20 @@ export default defineComponent({
                 return null;
             }
         });
+        const showEditArea = computed(() => {
+            const { isLogin, _id } = store.state.user;
+            if (currentPost.value && currentPost.value.author && isLogin) {
+                const postAuthor = currentPost.value.author as UserProps;
+                return postAuthor._id === _id;
+            } else {
+                return false;
+            }
+        });
         return {
             currentPost,
             currentHTML,
             currentImageUrl,
+            showEditArea,
         };
     },
 });
