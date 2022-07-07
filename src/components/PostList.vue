@@ -1,6 +1,6 @@
 <template>
     <div class="post-list">
-        <article v-for="post in posts" :key="post._id" class="card mb-3 shadow-sm">
+        <article v-for="post in list" :key="post._id" class="card mb-3 shadow-sm">
             <div class="card-body">
                 <h4>
                     <router-link :to="`/posts/${post._id}`">{{ post.title }}</router-link>
@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from 'vue';
+import { defineComponent, PropType } from 'vue';
 import { PostProps } from '../store/types';
 
 export default defineComponent({
@@ -28,15 +28,6 @@ export default defineComponent({
             required: true,
             type: Array as PropType<PostProps[]>,
         },
-    },
-    setup(props) {
-        const posts = computed(() => {
-            return props.list;
-        });
-
-        return {
-            posts,
-        };
     },
 });
 </script>

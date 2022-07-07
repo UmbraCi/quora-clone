@@ -1,5 +1,11 @@
 module.exports = {
     lintOnSave: false,
+    chainWebpack: (config) => {
+        config.plugin('html').tap((args) => {
+            args[0].title = '知乎专栏Clone';
+            return args;
+        });
+    },
     // 服务项配置
     devServer: {
         port: 8080,

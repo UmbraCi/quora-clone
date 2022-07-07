@@ -31,7 +31,7 @@ export default defineComponent({
         onMounted(() => {
             store.dispatch('fetchPost', currentId);
         });
-        const currentPost = computed<PostProps>(() => store.getters.getCurrentPost());
+        const currentPost = computed<PostProps>(() => store.getters.getCurrentPost(currentId));
         const currentHTML = computed(() => {
             const { content, isHTML } = currentPost.value;
             if (currentPost.value && content) {
