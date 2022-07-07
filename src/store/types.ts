@@ -24,6 +24,7 @@ export interface PostProps {
     column: string;
     author?: string;
     createdAt?: string;
+    isHTML?: boolean;
 }
 
 export interface ColumnProps {

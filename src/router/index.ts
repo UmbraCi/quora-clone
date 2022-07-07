@@ -33,6 +33,12 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import(/* webpackChunkName: "Post" */ '@/views/CreatePost/index.vue'),
         meta: { requiredLogin: true },
     },
+    {
+        path: '/posts/:id',
+        name: 'PostDetail',
+        component: () => import(/* webpackChunkName: "Post" */ '@/views/PostDetail/index.vue'),
+        meta: { requiredLogin: true },
+    },
 
     // {
     //   path: "/about",
