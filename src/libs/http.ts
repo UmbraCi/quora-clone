@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import store from '@/store';
 
 // 这里采用代理实现完成
@@ -34,5 +34,7 @@ axios.interceptors.response.use(
 // axios.get('/api/columns?currentPage=1&pageSize=5').then((res) => {
 //     console.log(res);
 // });
+
+export { axios, AxiosRequestConfig };
 
 export default axios;

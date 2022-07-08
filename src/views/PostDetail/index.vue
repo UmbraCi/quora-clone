@@ -12,28 +12,36 @@
             <div v-html="currentHTML"></div>
             <div v-if="showEditArea" class="btn-group mt-5">
                 <router-link type="button" class="btn btn-success" :to="{ name: 'CreatePost', query: { id: currentPost._id } }">编辑</router-link>
-                <button type="button" class="btn btn-danger">删除</button>
+                <button type="button" class="btn btn-danger" @click.prevent="modalIsVisible = true">删除</button>
             </div>
         </article>
+        <modal title="删除文章" :visible="modalIsVisible" @modal-on-close="modalIsVisible = false" @modal-on-confirm="hideAndDelete">
+            <p>确定要删除这篇文章吗？</p>
+        </modal>
     </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, defineComponent, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store/index';
-import { PostProps, ImageProps, UserProps } from '@/store/types';
+import { PostProps, ImageProps, UserProps, ResponseType } from '@/store/types';
 import MarkdownIt from 'markdown-it';
 import UserProfile from '@/components/UserProfile.vue';
+import Modal from '@/base/Modal.vue';
+import createMessage from '@/base/createMessage';
+
 export default defineComponent({
     name: 'PostDetail',
-    components: { UserProfile },
+    components: { UserProfile, Modal },
     setup() {
         const route = useRoute();
+        const router = useRouter();
         const store = useStore<GlobalDataProps>();
         const currentId = route.params.id;
         const md = new MarkdownIt();
+        const modalIsVisible = ref(false);
         onMounted(() => {
             store.dispatch('fetchPost', currentId);
         });
@@ -63,11 +71,22 @@ export default defineComponent({
                 return false;
             }
         });
+        const hideAndDelete = () => {
+            modalIsVisible.value = false;
+            store.dispatch('deletePost', currentId).then((rawData: ResponseType<PostProps>) => {
+                createMessage('删除成功，2秒后跳转到专栏首页', 'success', 2000);
+                setTimeout(() => {
+                    router.push(`/column/${store.state.user.column}`);
+                }, 2000);
+            });
+        };
         return {
             currentPost,
             currentHTML,
             currentImageUrl,
             showEditArea,
+            modalIsVisible,
+            hideAndDelete,
         };
     },
 });

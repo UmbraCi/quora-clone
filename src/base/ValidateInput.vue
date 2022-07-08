@@ -5,19 +5,10 @@
             class="form-control"
             v-bind="$attrs"
             :class="{ 'is-invalid': inputRef.error }"
-            :value="inputRef.val"
-            @input="updateValue"
+            v-model="inputRef.val"
             @blur="validateInput"
         />
-        <textarea
-            v-else
-            class="form-control"
-            :class="{ 'is-invalid': inputRef.error }"
-            :value="inputRef.val"
-            @blur="validateInput"
-            @input="updateValue"
-            v-bind="$attrs"
-        />
+        <textarea v-else class="form-control" :class="{ 'is-invalid': inputRef.error }" v-model="inputRef.val" @blur="validateInput" v-bind="$attrs" />
         <div class="form-text invalid-feedback" v-if="inputRef.error">
             {{ inputRef.message }}
         </div>
@@ -25,7 +16,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType, onMounted } from 'vue';
+import { defineComponent, reactive, PropType, onMounted, computed } from 'vue';
 import { emitter } from './ValidateForm.vue';
 
 const emailReg = /^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/;
@@ -55,15 +46,23 @@ export default defineComponent({
     inheritAttrs: false,
     setup(props, context) {
         const inputRef = reactive({
-            val: props.modelValue || '',
+            val: computed({
+                get: () => {
+                    return props.modelValue || '';
+                },
+                set: (val) => {
+                    context.emit('update:modelValue', val);
+                },
+            }),
+            // val: props.modelValue || '',
             error: false,
             message: '',
         });
-        const updateValue = (e: Event) => {
-            const targetValue = (e.target as HTMLInputElement).value;
-            inputRef.val = targetValue;
-            context.emit('update:modelValue', targetValue);
-        };
+        // const updateValue = (e: Event) => {
+        //     const targetValue = (e.target as HTMLInputElement).value;
+        //     inputRef.val = targetValue;
+        //     context.emit('update:modelValue', targetValue);
+        // };
         const validateInput = () => {
             if (props.rules) {
                 const allPassed = props.rules.every((rule) => {
@@ -101,7 +100,7 @@ export default defineComponent({
         return {
             inputRef,
             validateInput,
-            updateValue,
+            // updateValue,
             clearInputs,
         };
     },
