@@ -3,8 +3,13 @@ import { currentUser } from './testData';
 import { PostProps, ColumnProps, UserProps } from './types';
 import axios, { AxiosRequestConfig } from '@/libs/http';
 import { storageType, StorageHandler } from '@/libs/storage';
+import { arrToObj, objToArr } from '@/helper';
 
 const storageHandler = new StorageHandler();
+
+interface ListProps<P> {
+    [id: string]: P;
+}
 
 export interface GlobalErrorProps {
     status: boolean;
@@ -15,8 +20,8 @@ export interface GlobalDataProps {
     token: string;
     error: GlobalErrorProps;
     loading: boolean;
-    columns: ColumnProps[];
-    posts: PostProps[];
+    columns: ListProps<ColumnProps>;
+    posts: ListProps<PostProps>;
     user: UserProps;
 }
 
@@ -32,25 +37,28 @@ export default createStore<GlobalDataProps>({
         error: { status: false },
         token: storageHandler.getItem(storageType, 'token') || '',
         loading: false,
-        columns: [],
-        posts: [],
+        columns: {},
+        posts: {},
         user: currentUser,
     },
     getters: {
         getColumnById(state) {
             return (id: string) => {
-                return state.columns.find((c) => c._id === id);
+                return state.columns[id];
             };
         },
         getPostsByCid(state) {
             return (cid: string) => {
-                return state.posts.filter((post) => post.column == cid);
+                return objToArr(state.posts).filter((post) => post.column == cid);
             };
         },
         getCurrentPost(state) {
             return (id: string) => {
-                return state.posts.find((c) => c._id == id);
+                return state.posts[id];
             };
+        },
+        getColumns: (state) => {
+            return objToArr(state.columns);
         },
     },
     mutations: {
@@ -58,35 +66,26 @@ export default createStore<GlobalDataProps>({
         //     state.user = { ...state.user, isLogin: true, name: 'UmbraCi' };
         // },
         createPost(state, newPost) {
-            state.posts.push(newPost);
+            state.posts[newPost._id] = newPost;
         },
         fetchColumns(state, columns) {
-            state.columns = columns.data.list;
+            state.columns = arrToObj(columns.data.list);
         },
         fetchColumn(state, rawData) {
-            state.columns = [rawData.data];
+            state.columns[rawData._id] = rawData.data;
         },
         fetchPosts(state, rawData) {
-            state.posts = rawData.data.list;
+            state.posts = arrToObj(rawData.data.list);
         },
         fetchPost(state, rawData) {
             // 更新替换对应的post的数据
-            const targetId = rawData.data._id;
-            const oldIndex = state.posts.findIndex((c) => c._id === targetId);
-            const newPost = rawData.data;
-            state.posts.splice(oldIndex, 1, newPost);
+            state.posts[rawData._id] = rawData.data;
         },
         updatePost(state, rawData) {
-            state.posts = state.posts.map((post) => {
-                if (post._id === rawData.data._id) {
-                    return rawData.data;
-                } else {
-                    return post;
-                }
-            });
+            state.posts[rawData._id] = rawData.data;
         },
         deletePost(state, { data }) {
-            state.posts = state.posts.filter((post) => post._id !== data._id);
+            delete state.posts[data._id];
         },
         setLoading(state, status) {
             state.loading = status;
@@ -113,21 +112,12 @@ export default createStore<GlobalDataProps>({
     },
     actions: {
         fetchColumns({ commit }) {
-            // axios.get('/api/columns').then((res) => {
-            //     commit('fetchColumns', res.data);
-            // });
             return asyncAndCommit('/api/columns', 'fetchColumns', commit);
         },
         fetchColumn({ commit }, cid) {
-            // axios.get(`/api/columns/${cid}`).then((res) => {
-            //     commit('fetchColumn', res.data);
-            // });
             return asyncAndCommit(`/api/columns/${cid}`, 'fetchColumn', commit);
         },
         fetchPosts({ commit }, cid) {
-            // axios.get(`/api/columns/${cid}/posts`).then((res) => {
-            //     commit('fetchPosts', res.data);
-            // });
             return asyncAndCommit(`/api/columns/${cid}/posts`, 'fetchPosts', commit);
         },
         fetchPost({ commit }, id) {
