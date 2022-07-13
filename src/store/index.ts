@@ -20,8 +20,14 @@ export interface GlobalDataProps {
     token: string;
     error: GlobalErrorProps;
     loading: boolean;
-    columns: ListProps<ColumnProps>;
-    posts: ListProps<PostProps>;
+    columns: {
+        data: ListProps<ColumnProps>;
+        isLoaded: boolean;
+    };
+    posts: {
+        data: ListProps<PostProps>;
+        loadedColumns: Array<string>;
+    };
     user: UserProps;
 }
 
@@ -37,8 +43,14 @@ export default createStore<GlobalDataProps>({
         error: { status: false },
         token: storageHandler.getItem(storageType, 'token') || '',
         loading: false,
-        columns: {},
-        posts: {},
+        columns: {
+            data: {},
+            isLoaded: false,
+        },
+        posts: {
+            data: {},
+            loadedColumns: [],
+        },
         user: currentUser,
     },
     getters: {
@@ -69,20 +81,21 @@ export default createStore<GlobalDataProps>({
             state.posts[newPost._id] = newPost;
         },
         fetchColumns(state, columns) {
+            state.columns.isLoaded = true;
             state.columns = arrToObj(columns.data.list);
         },
         fetchColumn(state, rawData) {
-            state.columns[rawData._id] = rawData.data;
+            state.columns[rawData.data._id] = rawData.data;
         },
         fetchPosts(state, rawData) {
             state.posts = arrToObj(rawData.data.list);
         },
         fetchPost(state, rawData) {
             // 更新替换对应的post的数据
-            state.posts[rawData._id] = rawData.data;
+            state.posts[rawData.data._id] = rawData.data;
         },
         updatePost(state, rawData) {
-            state.posts[rawData._id] = rawData.data;
+            state.posts[rawData.data._id] = rawData.data;
         },
         deletePost(state, { data }) {
             delete state.posts[data._id];
