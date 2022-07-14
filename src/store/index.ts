@@ -4,6 +4,7 @@ import { PostProps, ColumnProps, UserProps } from './types';
 import axios, { AxiosRequestConfig } from '@/libs/http';
 import { storageType, StorageHandler } from '@/libs/storage';
 import { arrToObj, objToArr } from '@/helper';
+import { LoadParams } from '@/hooks/useLoadMore';
 
 const storageHandler = new StorageHandler();
 
@@ -15,6 +16,11 @@ export interface GlobalErrorProps {
     status: boolean;
     message?: string;
 }
+export interface LoadedPostProps {
+    columnId: string;
+    currentPage: number;
+    total: number;
+}
 
 export interface GlobalDataProps {
     token: string;
@@ -22,19 +28,26 @@ export interface GlobalDataProps {
     loading: boolean;
     columns: {
         data: ListProps<ColumnProps>;
-        isLoaded: boolean;
+        currentPage: number;
+        total: number;
     };
     posts: {
         data: ListProps<PostProps>;
-        loadedColumns: Array<string>;
+        loadedColumns: ListProps<LoadedPostProps>;
     };
     user: UserProps;
 }
 
 //封装请求
-const asyncAndCommit = async (url: string, mutationName: string, commit: Commit, config: AxiosRequestConfig = { method: 'get' }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const asyncAndCommit = async (url: string, mutationName: string, commit: Commit, config: AxiosRequestConfig = { method: 'get' }, extraData?: any) => {
     const { data } = await axios(url, config);
-    commit(mutationName, data);
+    if (extraData) {
+        commit(mutationName, { data, extraData });
+    } else {
+        commit(mutationName, data);
+    }
+
     return data;
 };
 
@@ -45,60 +58,75 @@ export default createStore<GlobalDataProps>({
         loading: false,
         columns: {
             data: {},
-            isLoaded: false,
+            currentPage: 0,
+            total: 0,
         },
         posts: {
             data: {},
-            loadedColumns: [],
+            loadedColumns: {},
         },
         user: currentUser,
     },
     getters: {
         getColumnById(state) {
             return (id: string) => {
-                return state.columns[id];
+                return state.columns.data[id];
             };
         },
         getPostsByCid(state) {
             return (cid: string) => {
-                return objToArr(state.posts).filter((post) => post.column == cid);
+                return objToArr(state.posts.data).filter((post) => post.column == cid);
             };
         },
         getCurrentPost(state) {
             return (id: string) => {
-                return state.posts[id];
+                return state.posts.data[id];
             };
         },
         getColumns: (state) => {
-            return objToArr(state.columns);
+            return objToArr(state.columns.data);
+        },
+        getLoadedPosts: (state) => (id: string) => {
+            return state.posts.loadedColumns[id];
         },
     },
     mutations: {
-        // login(state) {
-        //     state.user = { ...state.user, isLogin: true, name: 'UmbraCi' };
-        // },
         createPost(state, newPost) {
-            state.posts[newPost._id] = newPost;
+            state.posts.data[newPost._id] = newPost;
         },
-        fetchColumns(state, columns) {
-            state.columns.isLoaded = true;
-            state.columns = arrToObj(columns.data.list);
+        fetchColumns(state, rawData) {
+            const { data } = state.columns;
+            const { list, count, currentPage } = rawData.data;
+            state.columns = {
+                data: { ...data, ...arrToObj(list) },
+                total: count,
+                currentPage: currentPage * 1, //*1是为了转换为number  避免是string类型
+            };
+            // state.columns.isLoaded = true;
+            // state.columns.data = arrToObj(rawData.data.list);
         },
         fetchColumn(state, rawData) {
-            state.columns[rawData.data._id] = rawData.data;
+            state.columns.data[rawData.data._id] = rawData.data;
         },
-        fetchPosts(state, rawData) {
-            state.posts = arrToObj(rawData.data.list);
+        fetchPosts(state, { data: rawData, extraData: columnId }) {
+            const { data } = state.posts;
+            const { list, count, currentPage } = rawData.data;
+            state.posts.data = { ...data, ...arrToObj(list) };
+            state.posts.loadedColumns[columnId] = {
+                columnId: columnId,
+                total: count,
+                currentPage: currentPage * 1,
+            };
         },
         fetchPost(state, rawData) {
             // 更新替换对应的post的数据
-            state.posts[rawData.data._id] = rawData.data;
+            state.posts.data[rawData.data._id] = rawData.data;
         },
         updatePost(state, rawData) {
-            state.posts[rawData.data._id] = rawData.data;
+            state.posts.data[rawData.data._id] = rawData.data;
         },
         deletePost(state, { data }) {
-            delete state.posts[data._id];
+            delete state.posts.data[data._id];
         },
         setLoading(state, status) {
             state.loading = status;
@@ -124,17 +152,47 @@ export default createStore<GlobalDataProps>({
         },
     },
     actions: {
-        fetchColumns({ commit }) {
-            return asyncAndCommit('/api/columns', 'fetchColumns', commit);
+        fetchColumns({ state, commit }, params = {}) {
+            const { currentPage = 1, pageSize = 6 } = params as LoadParams;
+            if (state.columns.currentPage < currentPage) {
+                return asyncAndCommit(`/api/columns?currentPage=${currentPage}&pageSize=${pageSize}`, 'fetchColumns', commit);
+            }
         },
         fetchColumn({ commit }, cid) {
             return asyncAndCommit(`/api/columns/${cid}`, 'fetchColumn', commit);
         },
-        fetchPosts({ commit }, cid) {
-            return asyncAndCommit(`/api/columns/${cid}/posts`, 'fetchPosts', commit);
+        fetchPosts({ state, commit }, params = {}) {
+            const { columnId, currentPage = 1, pageSize = 3 } = params;
+            const loadedPosts = state.posts.loadedColumns[columnId];
+            if (!loadedPosts) {
+                return asyncAndCommit(
+                    `/api/columns/${columnId}/posts?currentPage=${currentPage}&pageSize=${pageSize}`,
+                    'fetchPosts',
+                    commit,
+                    { method: 'get' },
+                    columnId
+                );
+            } else {
+                const loadedPostCurrentPage = loadedPosts.currentPage || 0;
+                if (loadedPostCurrentPage < currentPage) {
+                    return asyncAndCommit(
+                        `/api/columns/${columnId}/posts?currentPage=${currentPage}&pageSize=${pageSize}`,
+                        'fetchPosts',
+                        commit,
+                        { method: 'get' },
+                        columnId
+                    );
+                }
+            }
         },
-        fetchPost({ commit }, id) {
-            return asyncAndCommit(`/api/posts/${id}`, 'fetchPost', commit);
+        fetchPost({ state, commit }, id) {
+            const currentPost = state.posts.data[id];
+            //没有获取过内容
+            if (!currentPost || !currentPost.content) {
+                return asyncAndCommit(`/api/posts/${id}`, 'fetchPost', commit);
+            } else {
+                return Promise.resolve({ data: currentPost });
+            }
         },
         login({ commit }, payload) {
             return asyncAndCommit('/api/user/login', 'login', commit, { method: 'post', data: payload });

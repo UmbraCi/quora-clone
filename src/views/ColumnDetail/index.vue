@@ -10,18 +10,21 @@
             </div>
         </div>
         <post-list :list="postList"></post-list>
-        <button class="btn btn-outline-primary mt-2 mb-5 mx-auto btn-block w-25 load-more">加载更多</button>
+        <button v-if="!isLastPage" @click="loadMorePage" class="btn btn-outline-primary mt-2 mb-5 mx-auto btn-block w-25 load-more">加载更多</button>
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted } from 'vue';
+import { defineComponent, computed, onMounted, reactive, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import PostList from '@/components/PostList.vue';
 import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
-import { ColumnProps, PostProps } from '@/store/types';
-import { generateFitUrl } from '@/helper';
+import { ColumnProps } from '@/store/types';
+import { addColumnAvatar } from '@/helper';
+import useLoadMore from '@/hooks/useLoadMore';
+
+type ColumnIdProps = string | undefined;
 
 export default defineComponent({
     name: 'ColumnDetail',
@@ -29,37 +32,51 @@ export default defineComponent({
     setup() {
         const route = useRoute();
         const store = useStore<GlobalDataProps>();
-        const currentId = route.params.id;
+        const currentId = route.params.id as ColumnIdProps;
+
+        const loaded = reactive({
+            currentPage: 0,
+            total: 0,
+        });
+        const total = computed(() => loaded.total);
+        watch(store.state.posts.loadedColumns, () => {
+            const { currentPage, total } = store.getters.getLoadedPosts(currentId);
+            loaded.total = total;
+            loaded.currentPage = currentPage;
+        });
+        const params = {
+            currentPage: loaded.currentPage ? loaded.currentPage + 1 : 2,
+            pageSize: 3,
+            columnId: String(currentId),
+        };
+        const { loadMorePage, isLastPage, currentPage } = useLoadMore('fetchPosts', total, params);
 
         onMounted(() => {
             store.dispatch('fetchColumn', currentId);
-            store.dispatch('fetchPosts', currentId);
+            store.dispatch('fetchPosts', { columnId: currentId, currentId: currentId, pageSize: 3 });
         });
 
         const column = computed(() => {
-            const selectColumn = store.getters.getColumnById(currentId) as ColumnProps;
+            const selectColumn = store.getters.getColumnById(currentId) as ColumnProps | undefined;
             if (selectColumn) {
-                generateFitUrl(selectColumn, 100, 100);
+                addColumnAvatar(selectColumn, 100, 100);
             }
             return selectColumn;
         });
         // const column = store.getters.getColumnById(currentId);
         // const list = store.getters.getPostById(currentId);
         const postList = computed(() => {
-            const list = store.getters.getPostsByCid(currentId) as PostProps[];
-            // list.map((item) => {
-            //     if (item.image && item.image.url) {
-            //         item.image.url = item.image.url + '?x-oss-process=image/resize,m_pad,h_100,w_100';
-            //     } else {
-            //         item.image = {
-            //             url: require('@/assets/logo.png'),
-            //         };
-            //     }
-            // });
+            const list = store.getters.getPostsByCid(currentId);
             return list;
         });
 
-        return { column, postList };
+        return { column, postList, loadMorePage, isLastPage, currentPage };
     },
 });
 </script>
+<style scoped>
+.load-more {
+    margin-left: 50% !important;
+    transform: translate3d(-50%, 0, 0);
+}
+</style>

@@ -1,7 +1,6 @@
 <template>
-    <div class="container">
+    <div class="container-fluid px-0 flex-shrink-0">
         <global-header :user="currentUser"></global-header>
-        <!-- <message v-if="error.status" type="error" :message="error.message"></message> -->
         <loader v-if="isLoading" text="拼命加载中" backgroundColor="rgba(0, 0, 0, 0.8)"></loader>
         <router-view></router-view>
         <footer class="text-center py-4 text-secondary bg-light mt-6">
@@ -59,4 +58,8 @@ export default defineComponent({
 });
 </script>
 
-<style lang="less"></style>
+<style lang="less">
+.container {
+    width: 100vw;
+}
+</style>

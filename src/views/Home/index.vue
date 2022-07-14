@@ -13,7 +13,7 @@
         </section>
         <h4 class="font-weight-bold text-center">发现精彩</h4>
         <column-list :list="list"></column-list>
-        <button class="btn btn-outline-primary mt-2 mb-5 mx-auto btn-block w-25 load-more">加载更多</button>
+        <button v-if="!isLastPage" @click="loadMorePage" class="btn btn-outline-primary mt-2 mb-5 mx-auto btn-block w-25">加载更多</button>
     </div>
 </template>
 
@@ -24,6 +24,7 @@ import { useStore } from 'vuex';
 import { GlobalDataProps } from '@/store';
 import { ResponseType, ImageProps } from '@/store/types';
 import createMessage from '@/base/createMessage';
+import useLoadMore from '@/hooks/useLoadMore';
 
 export default defineComponent({
     // eslint-disable-next-line vue/multi-word-component-names
@@ -33,8 +34,10 @@ export default defineComponent({
     },
     setup() {
         const store = useStore<GlobalDataProps>();
+        const total = computed(() => store.state.columns.total);
+        const currentPage = computed(() => store.state.columns.currentPage);
         onMounted(() => {
-            store.dispatch('fetchColumns');
+            store.dispatch('fetchColumns', { pageSize: 3 });
         });
         const list = computed(() => store.getters.getColumns);
         // const list = computed(() => {
@@ -58,7 +61,8 @@ export default defineComponent({
         const onFileUploadedError = () => {
             createMessage('上传图片失败，请重新上传', 'error');
         };
-        return { list, beforeUpload, onFileUpLoadedSuccess, onFileUploadedError };
+        const { loadMorePage, isLastPage } = useLoadMore('fetchColumns', total, { currentPage: currentPage.value ? currentPage.value + 1 : 2, pageSize: 3 });
+        return { list, beforeUpload, onFileUpLoadedSuccess, onFileUploadedError, loadMorePage, isLastPage };
     },
 });
 </script>
